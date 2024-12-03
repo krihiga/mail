@@ -5,8 +5,9 @@
   "main": "index.js",
   "scripts": {
     "build": "echo 'No build step required' && exit 0",
-    "start": "node server.js"
+    "start": "vercel dev"
   },
+  "type": "module",
   "keywords": [],
   "author": "",
   "license": "ISC",
