@@ -33,7 +33,7 @@ app.get('/', (_req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.post('/sendmail', (req, res) => {
+app.post('https://mail-ochre-chi.vercel.app/api/sendmail', (req, res) => {
     upload(req, res, function (err) {
         if (err) {
             console.error("File upload error:", err);
