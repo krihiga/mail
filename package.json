@@ -4,12 +4,14 @@
   "description": "��I\u0000n\u0000i\u0000t\u0000i\u0000a\u0000l\u0000 \u0000f\u0000i\u0000l\u0000e\u0000\r\u0000 \u0000",
   "main": "index.js",
   "scripts": {
+    "build": "echo 'No build step required' && exit 0",
     "start": "node server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    
     "body-parser": "^1.20.3",
     "express": "^4.21.1",
     "multer": "^1.4.5-lts.1",
