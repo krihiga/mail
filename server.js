@@ -33,7 +33,7 @@ app.get('/', (_req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-    app.post('https://mail-ochre-chi.vercel.app/sendmail', (req, res) => {
+    app.post('/api/sendmail', (req, res) => {
     upload(req, res, function (err) {
         if (err) {
             console.error("File upload error:", err);
@@ -59,8 +59,8 @@ app.get('/', (_req, res) => {
         const transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
-                user: 'onlyrithi@gmail.com',
-                pass: 'mvcz jraz ohrc ocwl'
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS
             },
             logger: true,
             debug: true
