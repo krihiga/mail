@@ -1,13 +1,18 @@
+const express = require('express');
 const nodemailer = require('nodemailer');
 const multer = require('multer');
-const path = require('path');  // To use path for file name manipulation
+const path = require('path'); // To use path for file name manipulation
+
+const app = express();
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Configure multer to use memory storage (no file system interaction on Vercel)
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage }).single('image');
 
-module.exports = (req, res) => {
-  // Handle the upload of the image and form data
+// Mail handler
+app.post('/api/sendmail', (req, res) => {
   upload(req, res, function (err) {
     if (err) {
       console.error("File upload error:", err);
@@ -26,7 +31,7 @@ module.exports = (req, res) => {
     const from = req.body.from;
     const subject = req.body.subject || 'No Subject';
     const message = req.body.message || 'No Message';
-    
+
     // Use path to get file extension or manipulate filename (if needed)
     const fileExtension = path.extname(req.file.originalname); // Get file extension
     const filename = `upload_${Date.now()}${fileExtension}`;  // Create a unique filename
@@ -67,7 +72,9 @@ module.exports = (req, res) => {
       }
     });
   });
-};
+});
+
+// Start server
 const port = process.env.PORT || 5500; // Use port 5500 if PORT is not set
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
