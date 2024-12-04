@@ -2,8 +2,8 @@
   "version": 2,
    "routes": [
     {
-      "src": "/api/server",
-      "dest": "/api/server.js"
+      "src": "/api/sendmail",
+      "dest": "/api/sendmail.js"
     }
   ]
 }
