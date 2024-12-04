@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "echo 'No build step required' && exit 0",
-    "start": "set PORT=5500 && vercel dev"
+    "start": "vercel dev"
   },
   "type": "module",
   "keywords": [],
