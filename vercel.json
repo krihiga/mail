@@ -1,11 +1,5 @@
 {
     "version": 2,
-    "env":[ 
-      {
-      "EMAIL_USER": "onlyrithi@gmail.com",
-      "EMAIL_PASS": "mvcz jraz ohrc ocwl"
-    }
-  ],
     "builds": [
       {
         "src": "api/server.js",
