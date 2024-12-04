@@ -11,11 +11,7 @@
         "src": "https://mail-ochre-chi.vercel.app/api/sendmail",
         "dest": "api/server.js"
       }
-    ],
-      "dev":[ {
-      "port": 5500
-    }
-  ]
+    ]
 } 
   
   
