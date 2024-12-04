@@ -60,7 +60,7 @@
 <body>
 <div class="container">
     <h1>Send Email with Attachment</h1>
-    <form action="/sendmail" id="emailForm" method="post" enctype="multipart/form-data">
+    <form action="/api/sendmail" id="emailForm" method="post" enctype="multipart/form-data">
         <label for="toEmail">Recipient Email:</label>
         <input type="email" id="toEmail" name="from" required>
 
@@ -78,9 +78,6 @@
     <div class="message" id="messageStatus"></div>
 </div>
 
-</body>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-
+</body>
 </html>
-
-

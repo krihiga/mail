@@ -1,16 +1,19 @@
+// api/sendmail.js
+
 const nodemailer = require('nodemailer');
 const multer = require('multer');
 const path = require('path');
 
 // Configure multer to use memory storage
 const storage = multer.memoryStorage();
-const upload = multer({ storage: storage }).single('image');
+const upload = multer({ storage: storage }).single('image'); // 'image' corresponds to your file input field in HTML
 
-module.exports = (req, res) => {
+export default function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
+  // Multer file upload middleware
   upload(req, res, function (err) {
     if (err) {
       console.error('File upload error:', err);
@@ -30,29 +33,29 @@ module.exports = (req, res) => {
     const subject = req.body.subject || 'No Subject';
     const message = req.body.message || 'No Message';
 
-    // Use path to get file extension or manipulate filename if needed
+    // Get file extension and prepare filename
     const fileExtension = path.extname(req.file.originalname);
     const filename = `upload_${Date.now()}${fileExtension}`;
 
     // Setup Nodemailer transport
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      service: 'gmail',  // You can use other email services as well
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
+        user: process.env.EMAIL_USER,  // Set in environment variables on Vercel
+        pass: process.env.EMAIL_PASS   // Set in environment variables on Vercel
       }
     });
 
     // Mail options
     const mailOptions = {
       from: from,
-      to: 'onlyrithi@gmail.com',
+      to: 'onlyrithi@gmail.com',  // Replace with your recipient email
       subject: subject,
       text: message,
       attachments: [
         {
           filename: filename,
-          content: req.file.buffer // Use the buffer from memory storage
+          content: req.file.buffer // Using the file buffer from memory storage
         }
       ]
     };
@@ -68,4 +71,4 @@ module.exports = (req, res) => {
       }
     });
   });
-};
+}
