@@ -4,10 +4,6 @@
     {
       "src": "/api/sendmail",
       "dest": "/api/server.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
     }
   ]
 }
