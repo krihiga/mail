@@ -11,9 +11,5 @@
       "src": "api/server.js",
       "use": "@vercel/node"
     }
-  ],
-  "env": {
-    "EMAIL_USER": "onlyrithi@gmail.com",
-    "EMAIL_PASS": "mvcz jraz ohrc ocwl"
-  }
+  ]
 }
