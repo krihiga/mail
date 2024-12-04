@@ -1,14 +1,8 @@
 {
     "version": 2,
-    "builds": [
+        "routes": [
       {
         "src": "api/server.js",
-        "use": "@vercel/node"
-      }
-    ],
-    "routes": [
-      {
-        "src": "https://mail-ochre-chi.vercel.app/api/sendmail",
         "dest": "api/server.js"
       }
     ]
