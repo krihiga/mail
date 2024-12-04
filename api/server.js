@@ -24,7 +24,7 @@ module.exports = (req, res) => {
     });
 
     const mailOptions = {
-      from: 'your-email@gmail.com',  // Sender's email
+      from: 'onlyrithi@gmail.com',  // Sender's email
       to: 'recipient-email@gmail.com',  // Recipient's email
       subject: 'Email with File Attachment',
       text: 'Please find the attached file.',
@@ -40,8 +40,9 @@ module.exports = (req, res) => {
       await transporter.sendMail(mailOptions);
       res.status(200).send('Email sent successfully');
     } catch (error) {
-      console.error('Error sending email:', error); // Log detailed error message
-      res.status(500).send('Failed to send email');
+      console.error('Error details:', error);  // Log full error
+      res.status(500).send(`Failed to send email: ${error.message}`);
     }
+    
   });
 };
