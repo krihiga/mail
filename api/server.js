@@ -37,11 +37,10 @@ module.exports = (req, res) => {
     };
 
     try {
-      // Send the email
       await transporter.sendMail(mailOptions);
       res.status(200).send('Email sent successfully');
     } catch (error) {
-      console.error(error);
+      console.error('Error sending email:', error); // Log detailed error message
       res.status(500).send('Failed to send email');
     }
   });
