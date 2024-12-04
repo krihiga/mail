@@ -1,0 +1,27 @@
+{
+    "version": 2,
+    "env":[ 
+      {
+      "EMAIL_USER": "onlyrithi@gmail.com",
+      "EMAIL_PASS": "mvcz jraz ohrc ocwl"
+    }
+  ],
+    "builds": [
+      {
+        "src": "api/server.js",
+        "use": "@vercel/node"
+      }
+    ],
+    "routes": [
+      {
+        "src": "https://mail-ochre-chi.vercel.app/api/sendmail",
+        "dest": "api/server.js"
+      }
+    ],
+      "dev":[ {
+      "port": 5500
+    }
+  ]
+} 
+  
+  
