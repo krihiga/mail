@@ -12,7 +12,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage }).single('image');
 
 // Mail handler
-app.post('/api/sendmail', (req, res) => {
+app.post('https://mail-ochre-chi.vercel.app/api/sendmail', (req, res) => {
   upload(req, res, function (err) {
     if (err) {
       console.error("File upload error:", err);
