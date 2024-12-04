@@ -1,8 +1,13 @@
 {
-  "functions": {
-    "api/server.js": {
-      "memory": 512,
-      "maxDuration": 10
+  "version": 2,
+  "routes": [
+    {
+      "src": "/api/sendmail",
+      "dest": "/api/server.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
-  }
+  ]
 }
