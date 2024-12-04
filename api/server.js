@@ -1,82 +1,34 @@
-// api/server.js
-
 const nodemailer = require('nodemailer');
-const multer = require('multer');
-const path = require('path');
 
-// Configure multer to use memory storage
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage }).single('image'); // 'image' corresponds to your file input field in HTML
-
-export default function handler(req, res) {
-  // Check for POST request
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'your-email@gmail.com',
+    pass: 'your-app-password' // Use app-specific password if 2FA is enabled
   }
+});
 
-  // Use multer to handle file upload
-  upload(req, res, function (err) {
-    if (err) {
-      console.error('File upload error:', err);
-      return res.status(500).json({ error: 'Error during file upload.' });
-    }
+const mailOptions = {
+  from: 'your-email@gmail.com',
+  to: 'recipient@gmail.com',
+  subject: 'Test Mail',
+  text: 'Hello, this is a test email!'
+};
 
-    // Validate the email address from the request
-    const from = req.body.from;
-    if (!from || !from.includes('@')) {
-      return res.status(400).json({ error: 'Invalid sender email address.' });
-    }
-
-    // Ensure a file was uploaded
-    if (!req.file) {
-      return res.status(400).json({ error: 'No file uploaded.' });
-    }
-
-    // Retrieve other fields from the request body
-    const subject = req.body.subject || 'No Subject';
-    const message = req.body.message || 'No Message';
-
-    // Get file extension and prepare filename
-    const fileExtension = path.extname(req.file.originalname);
-    const filename = `upload_${Date.now()}${fileExtension}`;
-
-    // Set up the transporter for nodemailer
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',  // Gmail service, you can use other services too
-      auth: {
-        user: process.env.EMAIL_USER,  // These should be set in Vercel environment variables
-        pass: process.env.EMAIL_PASS   // Set EMAIL_PASS as environment variable
-      }
-    });
-
-    // Email options with attachment
-    const mailOptions = {
-      from: from,
-      to: 'onlyrithi@gmail.com',  // Replace with your recipient email address
-      subject: subject,
-      text: message,
-      attachments: [
-        {
-          filename: filename,
-          content: req.file.buffer  // Using buffer for in-memory file storage
-        }
-      ]
-    };
-
-    // Send the email
-    transporter.sendMail(mailOptions, function (error, info) {
-      if (error) {
-        console.error('Error sending email:', error); // Log full error
-        return res.status(500).json({
-          error: 'Failed to send email.',
-          details: error.message,
-          stack: error.stack, // Add stack trace for more information
-        });
-      } else {
-        console.log('Email sent successfully:', info.response);
-        return res.status(200).json({ message: 'Email sent successfully.' });
-      }
-    });
-    
-  });
-}
+transporter.sendMail(mailOptions, (error, info) => {
+  if (error) {
+    console.log(error);
+  } else {
+    console.log('Email sent: ' + info.response);
+  }
+});
+transporter.sendMail(mailOptions, (error, info) => {
+  if (error) {
+    console.error('Error sending mail:', error);
+    res.status(500).send('Internal Server Error');
+  } else {
+    res.status(200).send('Email sent successfully');
+  }
+});
+require('dotenv').config();
+console.log(process.env.GMAIL_USER);
