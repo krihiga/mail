@@ -66,12 +66,17 @@ export default function handler(req, res) {
     // Send the email
     transporter.sendMail(mailOptions, function (error, info) {
       if (error) {
-        console.error('Error sending email:', error);
-        return res.status(500).json({ error: 'Failed to send email.' });
+        console.error('Error sending email:', error); // Log full error
+        return res.status(500).json({
+          error: 'Failed to send email.',
+          details: error.message,
+          stack: error.stack, // Add stack trace for more information
+        });
       } else {
         console.log('Email sent successfully:', info.response);
         return res.status(200).json({ message: 'Email sent successfully.' });
       }
     });
+    
   });
 }
