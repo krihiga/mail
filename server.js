@@ -1,30 +1,28 @@
-const express = require('express');
 const nodemailer = require('nodemailer');
 const multer = require('multer');
-const path = require('path'); // To use path for file name manipulation
+const path = require('path');
 
-const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Configure multer to use memory storage (no file system interaction on Vercel)
+// Configure multer to use memory storage
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage }).single('image');
 
-// Mail handler
-app.post('https://mail-ochre-chi.vercel.app/api/sendmail', (req, res) => {
+module.exports = (req, res) => {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method Not Allowed' });
+  }
+
   upload(req, res, function (err) {
     if (err) {
-      console.error("File upload error:", err);
-      return res.status(500).send("Error during file upload.");
+      console.error('File upload error:', err);
+      return res.status(500).json({ error: 'Error during file upload.' });
     }
 
     if (!req.body.from || !req.body.from.includes('@')) {
-      return res.status(400).send("Invalid sender email address.");
+      return res.status(400).json({ error: 'Invalid sender email address.' });
     }
 
     if (!req.file) {
-      return res.status(400).send("No file uploaded.");
+      return res.status(400).json({ error: 'No file uploaded.' });
     }
 
     // Retrieve data from request
@@ -32,9 +30,9 @@ app.post('https://mail-ochre-chi.vercel.app/api/sendmail', (req, res) => {
     const subject = req.body.subject || 'No Subject';
     const message = req.body.message || 'No Message';
 
-    // Use path to get file extension or manipulate filename (if needed)
-    const fileExtension = path.extname(req.file.originalname); // Get file extension
-    const filename = `upload_${Date.now()}${fileExtension}`;  // Create a unique filename
+    // Use path to get file extension or manipulate filename if needed
+    const fileExtension = path.extname(req.file.originalname);
+    const filename = `upload_${Date.now()}${fileExtension}`;
 
     // Setup Nodemailer transport
     const transporter = nodemailer.createTransport({
@@ -42,9 +40,7 @@ app.post('https://mail-ochre-chi.vercel.app/api/sendmail', (req, res) => {
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
-      },
-      logger: true,
-      debug: true
+      }
     });
 
     // Mail options
@@ -55,7 +51,7 @@ app.post('https://mail-ochre-chi.vercel.app/api/sendmail', (req, res) => {
       text: message,
       attachments: [
         {
-          filename: filename, // Use the manipulated filename
+          filename: filename,
           content: req.file.buffer // Use the buffer from memory storage
         }
       ]
@@ -64,18 +60,12 @@ app.post('https://mail-ochre-chi.vercel.app/api/sendmail', (req, res) => {
     // Send email
     transporter.sendMail(mailOptions, function (error, info) {
       if (error) {
-        console.error("Error sending email:", error);
-        return res.status(500).send("Failed to send email.");
+        console.error('Error sending email:', error);
+        return res.status(500).json({ error: 'Failed to send email.' });
       } else {
-        console.log("Email sent successfully:", info.response);
-        return res.status(200).send("Email sent successfully.");
+        console.log('Email sent successfully:', info.response);
+        return res.status(200).json({ message: 'Email sent successfully.' });
       }
     });
   });
-});
-
-// Start server
-const port = process.env.PORT || 5500; // Use port 5500 if PORT is not set
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
+};
