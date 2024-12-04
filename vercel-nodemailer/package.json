@@ -1,0 +1,16 @@
+{
+  "name": "vercel-nodemailer",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "echo 'No build step required' && exit 0",
+    "start": "vercel dev"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "nodemailer": "^6.9.16"
+  }
+}
