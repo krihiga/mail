@@ -68,3 +68,7 @@ module.exports = (req, res) => {
     });
   });
 };
+const port = process.env.PORT || 5500; // Use port 5500 if PORT is not set
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
