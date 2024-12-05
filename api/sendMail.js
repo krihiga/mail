@@ -10,19 +10,16 @@ app.use(cors());
 app.use(express.json());
 
 const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',  // Gmail SMTP server
-    port: 587,               // Port for TLS
-    secure: false,           // Use TLS
+    service: 'gmail', // Gmail's SMTP server
     auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_PASS,
+        user: process.env.GMAIL_USER,  // Your Gmail email address
+        pass: process.env.GMAIL_PASS,  // Your Gmail app password or regular password
     },
 });
 
 
-
 // Endpoint to send email
-app.post('api/sendMail', (req, res) => {
+app.post('https://mail-rose.vercel.app/api/sendMail', (req, res) => {
     const { email, subject, message } = req.body;
 
     const mailOptions = {
@@ -44,6 +41,3 @@ app.post('api/sendMail', (req, res) => {
     
 });
 
-app.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}`);
-});

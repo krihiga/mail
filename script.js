@@ -11,7 +11,7 @@ document.getElementById('emailForm').addEventListener('submit', function(e) {
         message
     };
 
-    fetch('api/sendMail', {
+    fetch('https://mail-rose.vercel.app/api/sendMail', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -20,7 +20,7 @@ document.getElementById('emailForm').addEventListener('submit', function(e) {
     })
     .then(response => response.json())
     .then(data => {
-        alert('Email sent successfully!');
+        alert(data.message);
     })
     .catch(error => {
         console.error('Error sending email:', error);
