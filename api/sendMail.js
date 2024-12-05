@@ -1,117 +1,51 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const multer = require('multer');
-const fs = require('fs');
-const path = require('path');
-const { google } = require('googleapis');
-const app = express();
+// sendMail.js (Backend for Vercel)
+import { google } from 'googleapis';
 
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+export default async function handler(req, res) {
+  const { email, subject, message } = req.body;
 
-// Ensure the images folder exists
-if (!fs.existsSync('./images')) {
-    fs.mkdirSync('./images');
-}
+  // Check if the request method is POST
+  if (req.method === 'POST') {
+    try {
+      // OAuth2 client setup
+      const oAuth2Client = new google.auth.OAuth2(
+        '3883661871-07tupqme26aqj7rfluesd55vadgrptsu.apps.googleusercontent.com', // Replace with your client ID
+        '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', // Replace with your client secret
+        'https://mail-rose.vercel.app/api/sendMail' // Replace with your redirect URI
+      );
 
-const Storage = multer.diskStorage({
-    destination: function (_req, _file, callback) {
-        callback(null, './images');
-    },
-    filename: function (_req, file, callback) {
-        callback(null, file.fieldname + "__" + Date.now() + "__" + file.originalname);
+      // Get the user's token (you must implement OAuth flow on frontend to get the token)
+      oAuth2Client.setCredentials({
+        access_token: req.body.access_token, // Access token you got from frontend OAuth
+        refresh_token: req.body.refresh_token, // Optional, if available
+      });
+
+      // Initialize Gmail API
+      const gmail = google.gmail({ version: 'v1', auth: oAuth2Client });
+
+      // Prepare the email
+      const rawMessage = [
+        `From: "krithi" onlyrithi@gmail.com`,
+        `To: ${email}`,
+        `Subject: ${subject}`,
+        `Content-Type: text/html; charset=UTF-8`,
+        `MIME-Version: 1.0`,
+        `\n${message}`,
+      ].join('\n');
+
+      // Send the email
+      const messageResponse = await gmail.users.messages.send({
+        userId: 'me', // 'me' refers to the authenticated user
+        requestBody: {
+          raw: Buffer.from(rawMessage).toString('base64').replace(/\+/g, '-').replace(/\//g, '_'),
+        },
+      });
+
+      res.status(200).json({ message: 'Email sent!', messageResponse });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
     }
-});
-
-const upload = multer({
-    storage: Storage
-}).single('image');
-
-app.use(express.static('public'));
-
-app.get('/', (_req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-const SCOPES = ['https://www.googleapis.com/auth/gmail.send'];
-let oAuth2Client;
-
-// Load client secrets from a local file
-fs.readFile('credentials.json', (err, content) => {
-    if (err) return console.error('Error loading client secret file:', err);
-    const { client_secret, client_id, redirect_uris } = JSON.parse(content).installed;
-    oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
-    // Set the token if you have it saved
-    fs.readFile('token.json', (err, token) => {
-        if (err) return getNewToken(oAuth2Client);
-        oAuth2Client.setCredentials(JSON.parse(token));
-    });
-});
-
-// Obtain new token for OAuth2
-function getNewToken(oAuth2Client) {
-    const authUrl = oAuth2Client.generateAuthUrl({
-        access_type: 'offline',
-        scope: SCOPES,
-    });
-    console.log('Authorize this app by visiting this url:', authUrl);
+  } else {
+    res.status(405).json({ message: 'Method Not Allowed' });
+  }
 }
-
-app.post('/sendmail', (req, res) => {
-    upload(req, res, async function (err) {
-        if (err) {
-            console.error("File upload error:", err);
-            return res.end("Error during file upload.");
-        }
-
-        if (!req.body.from || !req.body.from.includes('@')) {
-            return res.end("Invalid sender email address.");
-        }
-
-        if (!req.file) {
-            return res.end("No file uploaded.");
-        }
-
-        const { from, subject = 'No Subject', message = 'No Message' } = req.body;
-        const filePath = req.file.path;
-
-        try {
-            const gmail = google.gmail({ version: 'v1', auth: oAuth2Client });
-
-            const messageParts = [
-                `From: ${from}`,
-                `To: onlyrithi@gmail.com`,
-                `Subject: ${subject}`,
-                '',
-                message
-            ];
-
-            const messageBody = messageParts.join('\n');
-
-            // Encode message and attachment
-            const rawMessage = Buffer.from(
-                `${messageBody}\n\n--boundary\nContent-Type: application/octet-stream\nContent-Disposition: attachment; filename="${path.basename(filePath)}"\n\n${fs.readFileSync(filePath)}`
-            ).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-
-            await gmail.users.messages.send({
-                userId: 'me',
-                requestBody: {
-                    raw: rawMessage,
-                },
-            });
-
-            console.log("Email sent successfully.");
-            fs.unlink(filePath, (unlinkErr) => {
-                if (unlinkErr) console.error("Error deleting file:", unlinkErr);
-                return res.redirect('/result.html');
-            });
-        } catch (error) {
-            console.error("Error sending email:", error);
-            return res.end("Failed to send email.");
-        }
-    });
-});
-
-app.listen(5500, () => {
-    console.log("App started on port 5500");
-});

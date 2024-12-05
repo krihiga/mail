@@ -1,177 +1,93 @@
+<!-- index.html (Frontend) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Send Email with Attachment</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 600px;
-            margin: auto;
-            padding: 20px;
-            background-color: #fff;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        label {
-            display: block;
-            margin: 10px 0 5px;
-            font-size: 14px;
-        }
-        input[type="email"],
-        input[type="file"],
-        input[type="text"],
-        textarea {
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        button {
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            width: 100%;
-            font-size: 16px;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .message {
-            text-align: center;
-            margin-top: 20px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Send Email</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    input, button { margin-bottom: 10px; }
+  </style>
 </head>
 <body>
-<div class="container">
-    <h1>Send Email with Attachment</h1>
-    <form id="emailForm">
-        <label for="toEmail">Recipient Email:</label>
-        <input type="email" id="toEmail" name="to" required>
 
-        <label for="subject">Subject:</label>
-        <input type="text" id="subject" name="subject" required>
+  <h1>Send Email</h1>
+  <div>
+    <label for="email">Recipient Email: </label>
+    <input type="email" id="email" placeholder="onlyrithi@gmail.com" required><br>
+    
+    <label for="subject">Subject: </label>
+    <input type="text" id="subject" required><br>
+    
+    <label for="message">Message: </label>
+    <textarea id="message" rows="4" required></textarea><br>
 
-        <label for="message">Message:</label>
-        <textarea id="message" name="message" rows="4" required></textarea>
+    <button id="sendEmailBtn">Send Email</button>
+  </div>
 
-        <label for="attachment">Attach File:</label>
-        <input type="file" id="file" name="attachment" required>
+  <button id="authButton">Authenticate with Google</button>
 
-        <button type="button" onclick="sendEmail()">Send Email</button>
-    </form>
-    <div class="message" id="messageStatus"></div>
-</div>
+  <script>
+    let accessToken = null;
+    let refreshToken = null;
 
-<script src="https://apis.google.com/js/api.js"></script>
-<script>
-    const CLIENT_ID = '3883661871-07tupqme26aqj7rfluesd55vadgrptsu.apps.googleusercontent.com';  // Replace with your client ID
-    const API_KEY = 'AIzaSyDFd6wnkkW4od7MiiDiu1_4Cxg_mX2_gEw';  // Replace with your API key
-    const SCOPES = 'https://www.googleapis.com/auth/gmail.send';
+    // Authenticate with Google
+    document.getElementById('authButton').addEventListener('click', () => {
+      const clientId = '3883661871-07tupqme26aqj7rfluesd55vadgrptsu.apps.googleusercontent.com'; // Replace with your client ID
+      const redirectUri = 'https://mail-rose.vercel.app/api/sendMail'; // Replace with your redirect URI
+      const scope = 'https://www.googleapis.com/auth/gmail.send';
+      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}`;
 
-    function handleClientLoad() {
-        gapi.load('client:auth2', initClient);
-    }
+      window.location.href = authUrl;
+    });
 
-    function initClient() {
-        gapi.client.init({
-            apiKey: API_KEY,
-            clientId: CLIENT_ID,
-            discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/gmail/v1/rest"],
-            scope: SCOPES
-        }).then(() => {
-            console.log("Client initialized");
-            // Set up event listener for form submission
-            document.getElementById('emailForm').addEventListener('submit', function (e) {
-                e.preventDefault();
-                checkAuth();
-            });
-        }).catch(error => {
-            console.error("Error initializing client:", error);
+    // After OAuth callback
+    if (window.location.href.includes('code')) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('code');
+
+      fetch('/api/getTokens', {
+        method: 'POST',
+        body: JSON.stringify({ code }),
+        headers: { 'Content-Type': 'application/json' },
+      })
+        .then(response => response.json())
+        .then(data => {
+          accessToken = data.access_token;
+          refreshToken = data.refresh_token;
+          alert('Authenticated successfully');
         });
     }
 
-    function checkAuth() {
-        const isSignedIn = gapi.auth2.getAuthInstance().isSignedIn.get();
-        console.log("Is user signed in?", isSignedIn);
+    // Send Email function
+    document.getElementById('sendEmailBtn').addEventListener('click', () => {
+      const email = document.getElementById('email').value;
+      const subject = document.getElementById('subject').value;
+      const message = document.getElementById('message').value;
 
-        if (!isSignedIn) {
-            gapi.auth2.getAuthInstance().signIn().then(() => {
-                console.log("User signed in");
-                sendEmail();  // Proceed with sending the email after sign-in
-            }).catch((error) => {
-                console.error("Error during sign-in:", error);
-            });
-        } else {
-            sendEmail();  // Proceed with sending the email if already signed in
-        }
-    }
+      if (accessToken && email && subject && message) {
+        fetch('/api/sendMail', {
+          method: 'POST',
+          body: JSON.stringify({
+            email,
+            subject,
+            message,
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          }),
+          headers: { 'Content-Type': 'application/json' },
+        })
+          .then(response => response.json())
+          .then(data => {
+            alert(data.message);
+          })
+          .catch(error => {
+            alert('Error sending email');
+          });
+      }
+    });
+  </script>
 
-    function sendEmail() {
-        const to = document.getElementById('toEmail').value;
-        const subject = document.getElementById('subject').value;
-        const message = document.getElementById('message').value;
-        const fileInput = document.getElementById('file').files[0];
-
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            const fileData = e.target.result.split(',')[1]; // base64 encoded file content
-
-            // Creating the raw email content
-            const emailContent = [
-                "From: me",
-                `To: ${to}`,
-                `Subject: ${subject}`,
-                "Content-Type: multipart/mixed; boundary=\"boundary\"",
-                "\r\n--boundary",
-                "Content-Type: text/plain; charset=UTF-8",
-                `\r\n${message}`,
-                "\r\n--boundary",
-                `Content-Type: ${fileInput.type}; name="${fileInput.name}"`,
-                `Content-Disposition: attachment; filename="${fileInput.name}"`,
-                "Content-Transfer-Encoding: base64",
-                `\r\n${fileData}`,
-                "\r\n--boundary--"
-            ].join("\r\n");
-
-            // Encoding the email content in base64
-            const base64EncodedEmail = btoa(emailContent)
-                .replace(/\+/g, '-')
-                .replace(/\//g, '_')
-                .replace(/=+$/, '');
-
-            // Sending the email via Gmail API
-            gapi.client.gmail.users.messages.send({
-                userId: 'me',
-                resource: {
-                    raw: base64EncodedEmail
-                }
-            }).then(() => {
-                document.getElementById('messageStatus').innerText = 'Email sent successfully!';
-            }).catch(error => {
-                document.getElementById('messageStatus').innerText = 'Failed to send email.';
-                console.error('Error sending email:', error);
-            });
-        };
-        reader.readAsDataURL(fileInput);
-    }
-
-    handleClientLoad();
-</script>
 </body>
 </html>
