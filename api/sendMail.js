@@ -15,7 +15,6 @@ app.post('/api/sendMail', (req, res) => {
       }
   
       const { to, subject, message } = fields;
-      const attachment = files.attachment ? files.attachment[0] : null;
   
       try {
         const oAuth2Client = new google.auth.OAuth2(
@@ -44,17 +43,12 @@ app.post('/api/sendMail', (req, res) => {
           },
         });
   
+        // Send email without attachments
         const mailOptions = {
           from: 'onlyrithi@gmail.com',  // Replace with your Gmail address
           to: to,
           subject: subject,
           text: message,
-          attachments: attachment
-            ? [{
-                filename: attachment.originalFilename,
-                path: attachment.filepath,
-              }]
-            : [],
         };
   
         // Log mail options to verify before sending

@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Send Email with Attachment</title>
+  <title>Send Email</title>
 </head>
 <body>
 
-  <h1>Send Email with Attachment</h1>
+  <h1>Send Email</h1>
 
   <form id="emailForm">
     <label for="to">To:</label>
@@ -18,9 +18,6 @@
 
     <label for="message">Message:</label>
     <textarea id="message" name="message" required></textarea><br><br>
-
-    <label for="attachment">Attachment:</label>
-    <input type="file" id="attachment" name="attachment" accept=".txt,.jpg,.png,.pdf"><br><br>
 
     <button type="submit">Send Email</button>
   </form>
@@ -35,16 +32,12 @@
       const to = document.getElementById('to').value;
       const subject = document.getElementById('subject').value;
       const message = document.getElementById('message').value;
-      const attachment = document.getElementById('attachment').files[0];
 
       // Prepare the data to be sent in the POST request
       const formData = new FormData();
       formData.append('to', to);
       formData.append('subject', subject);
       formData.append('message', message);
-      if (attachment) {
-        formData.append('attachment', attachment);
-      }
 
       // Send the request to the backend (Vercel API)
       try {
