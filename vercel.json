@@ -3,6 +3,16 @@
       { 
       "src": "/api/send-email", 
       "dest": "/api/send-email.js" }
-    ]
+    ],
+    
+        "builds": [
+          {
+            "src": "index.html",
+            "use": "@vercel/static"
+          }
+        ],
+        "outputDirectory": "public"
+      
+      
   }
   
