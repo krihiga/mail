@@ -24,7 +24,7 @@ module.exports = async (req, res) => {
     oAuth2Client.setCredentials({ refresh_token: process.env.REFRESH_TOKEN });
 
     // Obtain an access token
-    const accessToken = await oAuth2Client.getAccessToken();
+    const { token } = await oAuth2Client.getAccessToken();
 
     // Configure the email transporter
     const transport = nodemailer.createTransport({
@@ -35,16 +35,16 @@ module.exports = async (req, res) => {
         clientId: process.env.CLIENT_ID,
         clientSecret: process.env.CLIENT_SECRET,
         refreshToken: process.env.REFRESH_TOKEN,
-        accessToken: accessToken.token, // Token acquired
+        accessToken: token, // Correct token usage
       },
     });
 
     // Mail options
     const mailOptions = {
-      from: `Your Name <${process.env.EMAIL}>`, // Sender's email address
-      to,                                      // Recipient's email address
-      subject,                                 // Email subject
-      text: message,                           // Email body (plain text)
+      from: `Your Name <${process.env.EMAIL}>`,
+      to,
+      subject,
+      text: message,
     };
 
     // Send the email
