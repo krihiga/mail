@@ -1,6 +1,9 @@
 const { google } = require('googleapis');
 const nodemailer = require('nodemailer');
 
+require('dotenv').config();
+
+
 const CLIENT_ID = process.env.GMAIL_CLIENT_ID;
 const CLIENT_SECRET = process.env.GMAIL_CLIENT_SECRET;
 const REDIRECT_URI = process.env.GMAIL_REDIRECT_URI;
