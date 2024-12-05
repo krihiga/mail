@@ -95,52 +95,62 @@
             clientId: CLIENT_ID,
             discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/gmail/v1/rest"],
             scope: SCOPES,
-             redirect_uri: 'https://mail-rose.vercel.app'
+        }).then(() => {
+            document.getElementById('emailForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                checkAuth();
+            });
         });
     }
 
+    function checkAuth() {
+        if (!gapi.auth2.getAuthInstance().isSignedIn.get()) {
+            gapi.auth2.getAuthInstance().signIn().then(sendEmail);
+        } else {
+            sendEmail();
+        }
+    }
+
     function sendEmail() {
-        gapi.auth2.getAuthInstance().signIn().then(() => {
-            const to = document.getElementById('toEmail').value;
-            const subject = document.getElementById('subject').value;
-            const message = document.getElementById('message').value;
-            const fileInput = document.getElementById('file').files[0];
-               
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const fileData = e.target.result.split(',')[1]; // base64 encoded file content
-                const emailContent = [
-                    `From: me`,
-                    `To: ${to}`,
-                    `Subject: ${subject}`,
-                    `Content-Type: multipart/mixed; boundary="boundary"`,
-                    `\r\n--boundary`,
-                    `Content-Type: text/plain; charset=UTF-8`,
-                    `\r\n${message}`,
-                    `\r\n--boundary`,
-                    `Content-Type: ${fileInput.type}; name="${fileInput.name}"`,
-                    `Content-Disposition: attachment; filename="${fileInput.name}"`,
-                    `Content-Transfer-Encoding: base64`,
-                    `\r\n${fileData}`,
-                    `\r\n--boundary--`
-                ].join('\r\n');
+        const to = document.getElementById('toEmail').value;
+        const subject = document.getElementById('subject').value;
+        const message = document.getElementById('message').value;
+        const fileInput = document.getElementById('file').files[0];
 
-                const base64EncodedEmail = btoa(emailContent).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const fileData = e.target.result.split(',')[1]; // base64 encoded file content
+            const emailContent = [
+                `From: me`,
+                `To: ${to}`,
+                `Subject: ${subject}`,
+                `Content-Type: multipart/mixed; boundary="boundary"`,
+                `\r\n--boundary`,
+                `Content-Type: text/plain; charset=UTF-8`,
+                `\r\n${message}`,
+                `\r\n--boundary`,
+                `Content-Type: ${fileInput.type}; name="${fileInput.name}"`,
+                `Content-Disposition: attachment; filename="${fileInput.name}"`,
+                `Content-Transfer-Encoding: base64`,
+                `\r\n${fileData}`,
+                `\r\n--boundary--`
+            ].join('\r\n');
 
-                gapi.client.gmail.users.messages.send({
-                    userId: 'me',
-                    resource: {
-                        raw: base64EncodedEmail
-                    }
-                }).then(() => {
-                    document.getElementById('messageStatus').innerText = 'Email sent successfully!';
-                }).catch(error => {
-                    document.getElementById('messageStatus').innerText = 'Failed to send email.';
-                    console.error(error);
-                });
-            };
-            reader.readAsDataURL(fileInput);
-        });
+            const base64EncodedEmail = btoa(emailContent).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+            gapi.client.gmail.users.messages.send({
+                userId: 'me',
+                resource: {
+                    raw: base64EncodedEmail
+                }
+            }).then(() => {
+                document.getElementById('messageStatus').innerText = 'Email sent successfully!';
+            }).catch(error => {
+                document.getElementById('messageStatus').innerText = 'Failed to send email.';
+                console.error(error);
+            });
+        };
+        reader.readAsDataURL(fileInput);
     }
 
     handleClientLoad();
