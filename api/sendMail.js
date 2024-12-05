@@ -10,12 +10,13 @@ app.use(cors());
 app.use(express.json());
 
 const transporter = nodemailer.createTransport({
-    service: 'gmail', // Use Gmail's SMTP server
+    service: 'gmail', // Gmail's SMTP server
     auth: {
-        user: process.env.GMAIL_USER,  // Gmail account (email address)
-        pass: process.env.GMAIL_PASS,  // Gmail app password or regular password
+        user: process.env.GMAIL_USER,  // Your Gmail email address
+        pass: process.env.GMAIL_PASS,  // Your Gmail app password or regular password
     },
 });
+
 
 // Endpoint to send email
 app.post('api/sendMail', (req, res) => {
@@ -36,6 +37,7 @@ app.post('api/sendMail', (req, res) => {
         console.log('Email sent: ' + info.response);
         return res.status(200).json({ message: 'Email sent successfully!' });
     });
+    
     
 });
 
