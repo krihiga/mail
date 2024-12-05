@@ -3,30 +3,68 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Send Email</title>
+  <title>Send Email with Attachment</title>
 </head>
 <body>
+
+  <h1>Send Email with Attachment</h1>
+
   <form id="emailForm">
-    <input type="file" id="attachment" />
+    <label for="to">To:</label>
+    <input type="email" id="to" name="to" required><br><br>
+
+    <label for="subject">Subject:</label>
+    <input type="text" id="subject" name="subject" required><br><br>
+
+    <label for="message">Message:</label>
+    <textarea id="message" name="message" required></textarea><br><br>
+
+    <label for="attachment">Attachment:</label>
+    <input type="file" id="attachment" name="attachment" accept=".txt,.jpg,.png,.pdf"><br><br>
+
     <button type="submit">Send Email</button>
   </form>
 
   <script>
-    document.getElementById('emailForm').addEventListener('submit', async (e) => {
+    // Get the form and submit event
+    const form = document.getElementById('emailForm');
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
+      // Get form data
+      const to = document.getElementById('to').value;
+      const subject = document.getElementById('subject').value;
+      const message = document.getElementById('message').value;
+      const attachment = document.getElementById('attachment').files[0];
+
+      // Prepare the data to be sent in the POST request
       const formData = new FormData();
-      const file = document.getElementById('attachment').files[0];
-      formData.append('file', file);
+      formData.append('to', to);
+      formData.append('subject', subject);
+      formData.append('message', message);
+      if (attachment) {
+        formData.append('attachment', attachment);
+      }
 
-      const response = await fetch('/api/sendMail', {
-        method: 'POST',
-        body: formData,
-      });
+      // Send the request to the backend (Vercel API)
+      try {
+        const response = await fetch('/api/sendMail', {
+          method: 'POST',
+          body: formData,
+        });
 
-      const result = await response.text();
-      alert(result);
+        const result = await response.json();
+        if (result.success) {
+          alert('Email sent successfully!');
+        } else {
+          alert('Failed to send email.');
+        }
+      } catch (error) {
+        console.error(error);
+        alert('Error sending email');
+      }
     });
   </script>
+
 </body>
 </html>
