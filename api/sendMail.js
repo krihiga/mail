@@ -10,6 +10,7 @@ app.post('/api/sendMail', (req, res) => {
     const form = new formidable.IncomingForm();
     form.parse(req, async (err, fields, files) => {
       if (err) {
+        console.error('Error parsing the form data:', err);
         return res.status(400).json({ error: 'Error parsing the form data', details: err });
       }
   
@@ -26,11 +27,10 @@ app.post('/api/sendMail', (req, res) => {
         oAuth2Client.setCredentials({ refresh_token: process.env.GMAIL_REFRESH_TOKEN });
   
         const accessToken = await oAuth2Client.getAccessToken();
-if (!accessToken.token) {
-  return res.status(400).json({ error: 'Unable to retrieve valid access token' });
-}
-console.log('Access Token:', accessToken.token);  // Log the token for verification
-
+        if (!accessToken.token) {
+          console.error('Error: Unable to retrieve a valid access token.');
+          return res.status(400).json({ error: 'Unable to retrieve a valid access token.' });
+        }
   
         const transporter = nodemailer.createTransport({
           service: 'gmail',
@@ -45,14 +45,20 @@ console.log('Access Token:', accessToken.token);  // Log the token for verificat
         });
   
         const mailOptions = {
-          from: 'onlyrithi@gmail.com', // Replace with your Gmail address
+          from: 'onlyrithi@gmail.com',
           to: to,
           subject: subject,
           text: message,
-          
+          attachments: attachment
+            ? [{
+                filename: attachment.originalFilename,
+                path: attachment.filepath,
+              }]
+            : [],
         };
   
         const result = await transporter.sendMail(mailOptions);
+        console.log('Email sent:', result);
         res.status(200).json({ success: true, response: result.response });
       } catch (error) {
         console.error('Error sending email:', error);
