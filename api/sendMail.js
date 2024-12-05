@@ -63,6 +63,8 @@ module.exports = async (req, res) => {
           refreshToken: process.env.REFRESH_TOKEN,
           accessToken: accessToken.token, // Token acquired
         },
+        logger: true,
+        debug: true,
       });
 
       // Mail options including attachment
@@ -81,15 +83,6 @@ module.exports = async (req, res) => {
 
       // Send the email
       await transporter.sendMail(mailOptions);
-
-      // Optionally, delete the uploaded file after sending the email
-      fs.unlink(file.path, (err) => {
-        if (err) {
-          console.error("Error deleting file:", err);
-        } else {
-          console.log("File deleted successfully.");
-        }
-      });
 
       res.status(200).json({ message: 'Email sent successfully!' });
     } catch (error) {
