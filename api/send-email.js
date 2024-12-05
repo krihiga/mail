@@ -3,6 +3,7 @@ const nodemailer = require('nodemailer');
 const formidable = require('formidable');
 const fs = require('fs');
 
+const EMAIL = 'YOUR_EMAIL_ID';
 const CLIENT_ID = 'YOUR_CLIENT_ID';
 const CLIENT_SECRET = 'YOUR_CLIENT_SECRET';
 const REDIRECT_URI = 'YOUR_REDIRECT_URI';
