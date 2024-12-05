@@ -1,18 +1,17 @@
-document.getElementById('emailForm').addEventListener('submit', async (e) => {
+document.getElementById('emailForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-    const to = document.getElementById('to').value;
-    const subject = document.getElementById('subject').value;
-    const message = document.getElementById('message').value;
-    const filePath = document.getElementById('file').value;
 
-    console.log(from, subject, message, filePath);
-    const response = await fetch('/api/sendMail', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ to, subject, message }),
+    const formData = new FormData();
+    formData.append('to', document.getElementById('to').value);
+    formData.append('subject', document.getElementById('subject').value);
+    formData.append('body', document.getElementById('body').value);
+    formData.append('file', document.getElementById('file').files[0]);
+
+    const response = await fetch('/send-email', {
+        method: 'POST',
+        body: formData
     });
-  
-    const result = await response.json();
-    document.getElementById('status').textContent = result.message;
-  });
-  
+
+    const result = await response.text();
+    alert(result);
+});
