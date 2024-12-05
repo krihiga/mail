@@ -105,6 +105,13 @@
             const subject = document.getElementById('subject').value;
             const message = document.getElementById('message').value;
             const fileInput = document.getElementById('file').files[0];
+                gapi.auth2.init({
+                client_id: 'YOUR_CLIENT_ID',
+                scope: 'https://www.googleapis.com/auth/gmail.send',
+                ux_mode: 'popup',  // Or 'redirect' if using redirect flow
+                redirect_uri: 'https://mail-rose.vercel.app'  // Match exactly with the one in Google Cloud Console
+            });
+
 
             const reader = new FileReader();
             reader.onload = function(e) {
