@@ -41,7 +41,7 @@ module.exports = (req, res) => {
       });
 
       const mailOptions = {
-        from: 'krithi onlyrithi@gmail.com', // Replace with your Gmail address
+        from: 'onlyrithi@gmail.com', // Replace with your Gmail address
         to: to,
         subject: subject,
         text: message,
@@ -56,10 +56,9 @@ module.exports = (req, res) => {
       };
 
       const result = await transporter.sendMail(mailOptions);
-      res.status(200).json({ success: true, result });
+      res.status(200).send('Email sent: ' + result.response);
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ success: false, error: error.message });
+      res.status(500).send(error.toString());
     }
   });
 };
