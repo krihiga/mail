@@ -3,7 +3,9 @@ document.getElementById('emailForm').addEventListener('submit', async (e) => {
     const to = document.getElementById('to').value;
     const subject = document.getElementById('subject').value;
     const message = document.getElementById('message').value;
-  
+    const filePath = document.getElementById('file').value;
+
+    console.log(from, subject, message, filePath);
     const response = await fetch('/api/sendMail', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

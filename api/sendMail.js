@@ -2,60 +2,102 @@ require('dotenv').config(); // Load environment variables
 
 const { google } = require('googleapis');
 const nodemailer = require('nodemailer');
+const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
+
+// Configure multer for file upload
+const Storage = multer.diskStorage({
+  destination: function (_req, _file, callback) {
+    callback(null, './uploads'); // Define the folder to store files
+  },
+  filename: function (_req, file, callback) {
+    callback(null, file.fieldname + '__' + Date.now() + '__' + file.originalname);
+  }
+});
+
+const upload = multer({ storage: Storage }).single('attachment'); // Only single file upload
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Only POST requests allowed' });
   }
 
-  const { to, subject, message } = req.body;
+  // Use multer to handle file upload before continuing with the email
+  upload(req, res, async (err) => {
+    if (err) {
+      return res.status(500).json({ message: 'Error uploading file', error: err.message });
+    }
 
-  if (!to || !subject || !message) {
-    return res.status(400).json({ message: 'Missing required fields: to, subject, message' });
-  }
+    const { to, subject, message } = req.body;
+    const file = req.file;
 
-  try {
-    // Initialize OAuth2 client
-    const oAuth2Client = new google.auth.OAuth2(
-      process.env.CLIENT_ID,
-      process.env.CLIENT_SECRET,
-      process.env.REDIRECT_URI
-    );
-    oAuth2Client.setCredentials({ refresh_token: process.env.REFRESH_TOKEN });
+    if (!to || !subject || !message) {
+      return res.status(400).json({ message: 'Missing required fields: to, subject, message' });
+    }
 
-    // Obtain an access token
-    const accessToken = await oAuth2Client.getAccessToken();
+    if (!file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
 
-    // Configure the email transporter
-    const transport = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        type: 'OAuth2',
-        user: process.env.EMAIL,
-        clientId: process.env.CLIENT_ID,
-        clientSecret: process.env.CLIENT_SECRET,
-        refreshToken: process.env.REFRESH_TOKEN,
-        accessToken: accessToken.token, // Token acquired
-      },
-    });
+    try {
+      // Initialize OAuth2 client
+      const oAuth2Client = new google.auth.OAuth2(
+        process.env.CLIENT_ID,
+        process.env.CLIENT_SECRET,
+        process.env.REDIRECT_URI
+      );
+      oAuth2Client.setCredentials({ refresh_token: process.env.REFRESH_TOKEN });
 
-    // Mail options
-    const mailOptions = {
-      from: `Your Name <${process.env.EMAIL}>`, // Sender's email address
-      to,                                      // Recipient's email address
-      subject,                                 // Email subject
-      text: message,                           // Email body (plain text)
-    };
+      // Obtain an access token
+      const accessToken = await oAuth2Client.getAccessToken();
 
-    // Send the email
-    await transport.sendMail(mailOptions);
-    res.status(200).json({ message: 'Email sent successfully!' });
+      // Configure the email transporter
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          type: 'OAuth2',
+          user: process.env.EMAIL,
+          clientId: process.env.CLIENT_ID,
+          clientSecret: process.env.CLIENT_SECRET,
+          refreshToken: process.env.REFRESH_TOKEN,
+          accessToken: accessToken.token, // Token acquired
+        },
+      });
 
-  } catch (error) {
-    console.error('Error sending email:', error);
-    res.status(500).json({
-      message: 'Failed to send email',
-      error: error.message || 'Unknown error',
-    });
-  }
+      // Mail options including attachment
+      const mailOptions = {
+        from: `Your Name <${process.env.EMAIL}>`, // Sender's email address
+        to, // Recipient's email address
+        subject, // Email subject
+        text: message, // Email body (plain text)
+        attachments: [
+          {
+            filename: file.originalname,
+            path: path.resolve(__dirname, file.path), // Correct path to the file
+          },
+        ],
+      };
+
+      // Send the email
+      await transporter.sendMail(mailOptions);
+
+      // Optionally, delete the uploaded file after sending the email
+      fs.unlink(file.path, (err) => {
+        if (err) {
+          console.error("Error deleting file:", err);
+        } else {
+          console.log("File deleted successfully.");
+        }
+      });
+
+      res.status(200).json({ message: 'Email sent successfully!' });
+    } catch (error) {
+      console.error('Error sending email:', error);
+      res.status(500).json({
+        message: 'Failed to send email',
+        error: error.message || 'Unknown error',
+      });
+    }
+  });
 };
