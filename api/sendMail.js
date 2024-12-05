@@ -10,12 +10,15 @@ app.use(cors());
 app.use(express.json());
 
 const transporter = nodemailer.createTransport({
-    service: 'gmail', // Gmail's SMTP server
+    host: 'smtp.gmail.com',  // Gmail SMTP server
+    port: 587,               // Port for TLS
+    secure: false,           // Use TLS
     auth: {
-        user: process.env.GMAIL_USER,  // Your Gmail email address
-        pass: process.env.GMAIL_PASS,  // Your Gmail app password or regular password
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_PASS,
     },
 });
+
 
 
 // Endpoint to send email
