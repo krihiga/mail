@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "echo 'Run vercel dev manually'",
-     "start": "node api/sendMail.js",
+     "start": "node api/send-email.js",
     "build": "echo 'No build step required'"
   },
   "dependencies": {
