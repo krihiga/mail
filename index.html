@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Send Email with Attachment</title>
+    <title>Send Email via Gmail API</title>
     <style>
-        /* Your existing CSS styles */
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f9;
@@ -19,130 +18,99 @@
             background-color: #fff;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             border-radius: 8px;
+            text-align: center;
         }
         h1 {
-            text-align: center;
-            color: #333;
+            color: #4CAF50;
         }
-        label {
-            display: block;
-            margin: 10px 0 5px;
-            font-size: 14px;
-        }
-        input[type="email"],
-        input[type="file"],
-        input[type="text"],
-        textarea {
+        input, textarea, button {
             width: 100%;
             padding: 10px;
-            margin: 8px 0;
+            margin: 10px 0;
             border: 1px solid #ddd;
             border-radius: 4px;
         }
         button {
-            padding: 10px 20px;
             background-color: #4CAF50;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
+            color: white;
             cursor: pointer;
-            width: 100%;
-            font-size: 16px;
         }
         button:hover {
             background-color: #45a049;
-        }
-        .message {
-            text-align: center;
-            margin-top: 20px;
         }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>Send Email with Attachment</h1>
-    <form id="emailForm">
-        <label for="toEmail">Recipient Email:</label>
-        <input type="email" id="toEmail" name="to" required>
-
-        <label for="subject">Subject:</label>
-        <input type="text" id="subject" name="subject" required>
-
-        <label for="message">Message:</label>
-        <textarea id="message" name="message" rows="4" required></textarea>
-
-        <label for="attachment">Attach File:</label>
-        <input type="file" id="file" name="attachment" required>
-
-        <button type="button" onclick="sendEmail()">Send Email</button>
-    </form>
-    <div class="message" id="messageStatus"></div>
+    <h1>Send Email via Gmail API</h1>
+    <input type="email" id="toEmail" placeholder="Recipient Email" required>
+    <input type="text" id="subject" placeholder="Subject" required>
+    <textarea id="message" placeholder="Message" rows="5" required></textarea>
+    <button onclick="authenticateAndSendEmail()">Send Email</button>
+    <p id="status"></p>
 </div>
 
 <script src="https://apis.google.com/js/api.js"></script>
 <script>
-    let CLIENT_ID = '3883661871-07tupqme26aqj7rfluesd55vadgrptsu.apps.googleusercontent.com';
+    let CLIENT_ID = '3883661871-07tupqme26aqj7rfluesd55vadgrptsu.apps.googleusercontent.com;
     let API_KEY = 'AIzaSyDFd6wnkkW4od7MiiDiu1_4Cxg_mX2_gEw';
     let SCOPES = 'https://www.googleapis.com/auth/gmail.send';
+    let DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/gmail/v1/rest';
 
-    function handleClientLoad() {
-        gapi.load('client:auth2', initClient);
-    }
-
-    function initClient() {
-        gapi.client.init({
-            apiKey: API_KEY,
-            clientId: CLIENT_ID,
-            discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/gmail/v1/rest"],
-            scope: SCOPES
+    function authenticateAndSendEmail() {
+        gapi.load('client:auth2', () => {
+            gapi.client.init({
+                apiKey: API_KEY,
+                clientId: CLIENT_ID,
+                discoveryDocs: [DISCOVERY_DOC],
+                scope: SCOPES,
+                ux_mode: 'popup', // 'redirect' for redirect-based
+                redirect_uri: 'https://mail-rose.vercel.app/' // or your deployed domain
+            }).then(() => {
+                const authInstance = gapi.auth2.getAuthInstance();
+                if (!authInstance.isSignedIn.get()) {
+                    authInstance.signIn().then(sendEmail);
+                } else {
+                    sendEmail();
+                }
+            }).catch(error => {
+                document.getElementById('status').textContent = 'Error initializing Google API';
+                console.error(error);
+            });
         });
     }
 
     function sendEmail() {
-        gapi.auth2.getAuthInstance().signIn().then(() => {
-            const to = document.getElementById('toEmail').value;
-            const subject = document.getElementById('subject').value;
-            const message = document.getElementById('message').value;
-            const fileInput = document.getElementById('file').files[0];
+        const to = document.getElementById('toEmail').value;
+        const subject = document.getElementById('subject').value;
+        const message = document.getElementById('message').value;
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const fileData = e.target.result.split(',')[1]; // base64 encoded file content
-                const emailContent = [
-                    `From: me`,
-                    `To: ${to}`,
-                    `Subject: ${subject}`,
-                    `Content-Type: multipart/mixed; boundary="boundary"`,
-                    `\r\n--boundary`,
-                    `Content-Type: text/plain; charset=UTF-8`,
-                    `\r\n${message}`,
-                    `\r\n--boundary`,
-                    `Content-Type: ${fileInput.type}; name="${fileInput.name}"`,
-                    `Content-Disposition: attachment; filename="${fileInput.name}"`,
-                    `Content-Transfer-Encoding: base64`,
-                    `\r\n${fileData}`,
-                    `\r\n--boundary--`
-                ].join('\r\n');
+        const emailContent = `
+            From: me
+            To: ${to}
+            Subject: ${subject}
+            
+            ${message}
+        `;
 
-                const base64EncodedEmail = btoa(emailContent).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        const encodedMessage = btoa(emailContent)
+            .replace(/\+/g, '-')
+            .replace(/\//g, '_')
+            .replace(/=+$/, '');
 
-                gapi.client.gmail.users.messages.send({
-                    userId: 'me',
-                    resource: {
-                        raw: base64EncodedEmail
-                    }
-                }).then(() => {
-                    document.getElementById('messageStatus').innerText = 'Email sent successfully!';
-                }).catch(error => {
-                    document.getElementById('messageStatus').innerText = 'Failed to send email.';
-                    console.error(error);
-                });
-            };
-            reader.readAsDataURL(fileInput);
+        gapi.client.gmail.users.messages.send({
+            userId: 'me',
+            resource: {
+                raw: encodedMessage
+            }
+        }).then(response => {
+            document.getElementById('status').textContent = 'Email sent successfully!';
+            console.log('Email sent:', response);
+        }).catch(error => {
+            document.getElementById('status').textContent = 'Failed to send email.';
+            console.error(error);
         });
     }
-
-    handleClientLoad();
 </script>
 </body>
 </html>
