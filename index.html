@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Send Email</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <form id="emailForm">
+    <label for="to">To:</label>
+    <input type="email" id="to" value="onlyrithi@gmail.com" readonly><br>
+    
+    <label for="subject">Subject:</label>
+    <input type="text" id="subject" placeholder="Enter Subject"><br>
+    
+    <label for="message">Message:</label>
+    <textarea id="message" placeholder="Enter your message"></textarea><br>
+    
+    <label for="file">Attachment:</label>
+    <input type="file" id="file"><br>
+    
+    <button type="submit">Send Email</button>
+  </form>
+  
+  <script src="script.js"></script>
+</body>
+</html>
