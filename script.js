@@ -18,12 +18,20 @@ document.getElementById('emailForm').addEventListener('submit', function(e) {
         },
         body: JSON.stringify(data),
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            // Check if the response is not OK (status not in range 200-299)
+            throw new Error('Failed to send email');
+        }
+        return response.json();
+    })
     .then(data => {
-        alert(data.message);
+        // Assuming the backend returns a success message
+        alert(data.message || 'Email sent successfully!');
     })
     .catch(error => {
+        // Display detailed error message for debugging
         console.error('Error sending email:', error);
-        alert('Error sending email.');
+        alert('Error sending email: ' + error.message);
     });
 });
