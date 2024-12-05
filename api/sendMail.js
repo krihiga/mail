@@ -45,7 +45,7 @@ app.post('/api/sendMail', (req, res) => {
         });
   
         const mailOptions = {
-          from: 'onlyrithi@gmail.com',
+          from: 'onlyrithi@gmail.com',  // Replace with your Gmail address
           to: to,
           subject: subject,
           text: message,
@@ -57,11 +57,17 @@ app.post('/api/sendMail', (req, res) => {
             : [],
         };
   
+        // Log mail options to verify before sending
+        console.log('Mail Options:', mailOptions);
+  
         const result = await transporter.sendMail(mailOptions);
         console.log('Email sent:', result);
         res.status(200).json({ success: true, response: result.response });
       } catch (error) {
         console.error('Error sending email:', error);
+        if (error.response) {
+          console.error('Gmail API Response Error:', error.response);
+        }
         res.status(500).json({ error: error.toString(), details: error.response || error.message });
       }
     });
