@@ -54,7 +54,7 @@
         });
 
         const result = await response.json();
-        if (result.success) {
+        if (response.ok && result.success) {
           alert('Email sent successfully!');
         } else {
           alert('Failed to send email.');

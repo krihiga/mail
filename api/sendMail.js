@@ -1,13 +1,12 @@
-const { google } = require('googleapis');
+const express = require('express');
 const nodemailer = require('nodemailer');
 const formidable = require('formidable');
+const { google } = require('googleapis');
 
-module.exports = (req, res) => {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+const app = express();
 
-  // Parse the form data (including file uploads)
+// Middleware to handle form data and file uploads
+app.post('/api/sendMail', (req, res) => {
   const form = new formidable.IncomingForm();
   form.parse(req, async (err, fields, files) => {
     if (err) {
@@ -32,7 +31,7 @@ module.exports = (req, res) => {
         service: 'gmail',
         auth: {
           type: 'OAuth2',
-          user: 'onlyrithi@gmail.com', // Replace with your Gmail address
+          user: 'onlyrithi@gmail.com',
           clientId: process.env.GMAIL_CLIENT_ID,
           clientSecret: process.env.GMAIL_CLIENT_SECRET,
           refreshToken: process.env.GMAIL_REFRESH_TOKEN,
@@ -41,25 +40,24 @@ module.exports = (req, res) => {
       });
 
       const mailOptions = {
-        from: 'onlyrithi@gmail.com', // Replace with your Gmail address
+        from: 'onlyrithi@gmail.com',
         to: to,
         subject: subject,
         text: message,
         attachments: attachment
-          ? [
-              {
-                filename: attachment.originalFilename,
-                path: attachment.filepath,
-              },
-            ]
+          ? [{
+              filename: attachment.originalFilename,
+              path: attachment.filepath,
+            }]
           : [],
       };
 
       const result = await transporter.sendMail(mailOptions);
-      res.status(200).send('Email sent: ' + result.response);
+      res.status(200).json({ success: true, response: result.response });
     } catch (error) {
-      console.error('Error sending email:', error); // Log the full error
-      res.status(500).send({ error: error.toString() });
+      console.error('Error sending email:', error);
+      res.status(500).json({ error: error.toString() });
     }
   });
-};
+});
+
