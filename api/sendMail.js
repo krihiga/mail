@@ -61,7 +61,7 @@ async function sendMail(subject, body, to, attachment) {
 }
 
 // Endpoint to send email
-app.post('/send-email', upload.single('file'), async (req, res) => {
+app.post('api/sendMail', upload.single('file'), async (req, res) => {
   const { subject, body, to } = req.body;
   const attachment = req.file;
 

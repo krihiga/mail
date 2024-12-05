@@ -7,7 +7,7 @@ document.getElementById('emailForm').addEventListener('submit', async function(e
     formData.append('body', document.getElementById('body').value);
     formData.append('file', document.getElementById('file').files[0]);
 
-    const response = await fetch('/send-email', {
+    const response = await fetch('api/sendMail', {
         method: 'POST',
         body: formData
     });
