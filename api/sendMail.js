@@ -2,6 +2,8 @@ const express = require('express');
 const nodemailer = require('nodemailer');
 const cors = require('cors');
 const app = express();
+require('dotenv').config();
+
 const port = process.env.PORT || 5500;
 
 app.use(cors());
@@ -28,12 +30,13 @@ app.post('api/sendMail', (req, res) => {
 
     transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
-            console.error('Error sending email:', error);
-            return res.status(500).json({ error: 'Error sending email' });
+            console.error('Error sending email:', error);  // Log the detailed error
+            return res.status(500).json({ error: error.message });  // Send the error message in the response
         }
         console.log('Email sent: ' + info.response);
         return res.status(200).json({ message: 'Email sent successfully!' });
     });
+    
 });
 
 app.listen(port, () => {
