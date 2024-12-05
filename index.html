@@ -1,93 +1,27 @@
-<!-- index.html (Frontend) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Send Email</title>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    input, button { margin-bottom: 10px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Email</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-  <h1>Send Email</h1>
-  <div>
-    <label for="email">Recipient Email: </label>
-    <input type="email" id="email" placeholder="onlyrithi@gmail.com" required><br>
-    
-    <label for="subject">Subject: </label>
-    <input type="text" id="subject" required><br>
-    
-    <label for="message">Message: </label>
-    <textarea id="message" rows="4" required></textarea><br>
-
-    <button id="sendEmailBtn">Send Email</button>
-  </div>
-
-  <button id="authButton">Authenticate with Google</button>
-
-  <script>
-    let accessToken = null;
-    let refreshToken = null;
-
-    // Authenticate with Google
-    document.getElementById('authButton').addEventListener('click', () => {
-      const clientId = '3883661871-07tupqme26aqj7rfluesd55vadgrptsu.apps.googleusercontent.com'; // Replace with your client ID
-      const redirectUri = 'https://mail-rose.vercel.app/api/sendMail'; // Replace with your redirect URI
-      const scope = 'https://www.googleapis.com/auth/gmail.send';
-      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}`;
-
-      window.location.href = authUrl;
-    });
-
-    // After OAuth callback
-    if (window.location.href.includes('code')) {
-      const urlParams = new URLSearchParams(window.location.search);
-      const code = urlParams.get('code');
-
-      fetch('/api/getTokens', {
-        method: 'POST',
-        body: JSON.stringify({ code }),
-        headers: { 'Content-Type': 'application/json' },
-      })
-        .then(response => response.json())
-        .then(data => {
-          accessToken = data.access_token;
-          refreshToken = data.refresh_token;
-          alert('Authenticated successfully');
-        });
-    }
-
-    // Send Email function
-    document.getElementById('sendEmailBtn').addEventListener('click', () => {
-      const email = document.getElementById('email').value;
-      const subject = document.getElementById('subject').value;
-      const message = document.getElementById('message').value;
-
-      if (accessToken && email && subject && message) {
-        fetch('/api/sendMail', {
-          method: 'POST',
-          body: JSON.stringify({
-            email,
-            subject,
-            message,
-            access_token: accessToken,
-            refresh_token: refreshToken,
-          }),
-          headers: { 'Content-Type': 'application/json' },
-        })
-          .then(response => response.json())
-          .then(data => {
-            alert(data.message);
-          })
-          .catch(error => {
-            alert('Error sending email');
-          });
-      }
-    });
-  </script>
-
+    <div class="email-form">
+        <h2>Send Email</h2>
+        <form id="emailForm">
+            <label for="email">Recipient Email:</label>
+            <input type="email" id="email" name="email" placeholder="onlyrithi@gmail.com" required>
+            
+            <label for="subject">Subject:</label>
+            <input type="text" id="subject" name="subject" required>
+            
+            <label for="message">Message:</label>
+            <textarea id="message" name="message" required></textarea>
+            
+            <button type="submit">Send Email</button>
+        </form>
+    </div>
+    <script src="script.js"></script>
 </body>
 </html>
