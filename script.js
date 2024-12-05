@@ -11,7 +11,7 @@ document.getElementById('emailForm').addEventListener('submit', function(e) {
         message
     };
 
-    fetch('https://your-vercel-deployment-url/api/sendMail', {  // Replace with your deployed Vercel URL
+    fetch('https://mail-rose.vercel.app/api/sendMail', {  // Replace with your deployed Vercel URL
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
