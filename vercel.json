@@ -1,14 +1,15 @@
 {
     "version": 2,
     "routes": [
-      {
-        "src": "/api/sendMail",
-        "dest": "api/sendMail.js"
-      },
-      {
-        "src": "/(.*)",
-        "dest": "/public/$1"
-      }
-    ]
+        {
+          "src": "/send-email",
+          "methods": ["POST"],
+          "dest": "/sendMail.js"
+        },
+        {
+          "src": "/(.*)",
+          "dest": "/index.html"
+        }
+      ]
   }
   
