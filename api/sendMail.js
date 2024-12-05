@@ -15,7 +15,6 @@ module.exports = async (req, res) => {
   }
 
   try {
-    // Initialize OAuth2 client
     const oAuth2Client = new google.auth.OAuth2(
       process.env.CLIENT_ID,
       process.env.CLIENT_SECRET,
@@ -23,10 +22,9 @@ module.exports = async (req, res) => {
     );
     oAuth2Client.setCredentials({ refresh_token: process.env.REFRESH_TOKEN });
 
-    // Obtain an access token
     const { token } = await oAuth2Client.getAccessToken();
+    console.log('Access Token:', token);
 
-    // Configure the email transporter
     const transport = nodemailer.createTransport({
       service: 'gmail',
       auth: {
@@ -35,11 +33,18 @@ module.exports = async (req, res) => {
         clientId: process.env.CLIENT_ID,
         clientSecret: process.env.CLIENT_SECRET,
         refreshToken: process.env.REFRESH_TOKEN,
-        accessToken: token, // Correct token usage
+        accessToken: token,
       },
     });
 
-    // Mail options
+    transport.verify((error, success) => {
+      if (error) {
+        console.log('Transport Error:', error);
+      } else {
+        console.log('Server is ready to send emails:', success);
+      }
+    });
+
     const mailOptions = {
       from: `Your Name <${process.env.EMAIL}>`,
       to,
@@ -47,12 +52,11 @@ module.exports = async (req, res) => {
       text: message,
     };
 
-    // Send the email
     await transport.sendMail(mailOptions);
     res.status(200).json({ message: 'Email sent successfully!' });
 
   } catch (error) {
-    console.error('Error sending email:', error);
+    console.error('Error sending email:', error.stack);
     res.status(500).json({
       message: 'Failed to send email',
       error: error.message || 'Unknown error',
