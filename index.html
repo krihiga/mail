@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Send Email</title>
+</head>
+<body>
+  <form id="emailForm">
+    <input type="file" id="attachment" />
+    <button type="submit">Send Email</button>
+  </form>
+
+  <script>
+    document.getElementById('emailForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData();
+      const file = document.getElementById('attachment').files[0];
+      formData.append('file', file);
+
+      const response = await fetch('/api/sendMail', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.text();
+      alert(result);
+    });
+  </script>
+</body>
+</html>
