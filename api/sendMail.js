@@ -16,8 +16,8 @@ module.exports = async (req, res) => {
         const { email, subject, message } = req.body;
 
         const mailOptions = {
-            from: process.env.GMAIL_USER,  // Sender's email address
-            to: email,                    // Recipient's email address
+            from: email ,  // Sender's email address
+            to: process.env.GMAIL_USER,                    // Recipient's email address
             subject: subject,             // Subject of the email
             text: message,                // Body of the email
         };
